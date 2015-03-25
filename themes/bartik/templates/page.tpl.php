@@ -237,7 +237,7 @@
     <?php endif; ?>
 
     <?php if ($page['footer']): ?>
-      <div id="footer" class="clearfix">
+      <div id="footer" class="clearfix"> morten sync test
         <?php print render($page['footer']); ?>
       </div> <!-- /#footer -->
     <?php endif; ?>
