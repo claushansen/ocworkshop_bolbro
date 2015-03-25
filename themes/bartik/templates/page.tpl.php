@@ -237,7 +237,7 @@
     <?php endif; ?>
 
     <?php if ($page['footer']): ?>
-      <div id="footer" class="clearfix">test of git
+      <div id="footer" class="clearfix">
         <?php print render($page['footer']); ?>
       </div> <!-- /#footer -->
     <?php endif; ?>
