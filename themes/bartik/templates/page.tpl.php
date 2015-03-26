@@ -3,7 +3,7 @@
 /**
  * @file
  * Bartik's theme implementation to display a single Drupal page.
- *
+ * BLA BLA BLA
  * The doctype, html, head and body tags are not in this template. Instead they
  * can be found in the html.tpl.php template normally located in the
  * modules/system directory.
