@@ -2,4 +2,3 @@ name = bolbro library custom theme
 description = This is a sub-theme of theme bootstrap3, made by Morten Halling for the web site ocworkshop.pantheon.io.
 core = 7.x
 base theme = Bootstrap
-stylesheets[all][]   = mybolbrostyle.css
