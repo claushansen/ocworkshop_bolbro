@@ -2,3 +2,42 @@
  * This file should get overwritten if Method 1 is used. If Method 2 is chosen,
  * remove this comment and start adding your styles to this file.
  */
+ /*Custom styling of my event page*/
+.event-teaser-headings,.event-teaser-desc,.event-time{
+	margin-left: 250px;
+	}
+
+.event-teaser-img-box{
+	float:left;
+	padding:5px;
+	border:1px solid #ccc;
+	/*argin-right:20px;*/
+	}
+
+.event-teaser-desc{
+	min-height:160px;
+	margin-top:20px;
+	}
+
+.event-time {
+    border-bottom: 2px solid #ccc;
+    font-size: 20px;
+    margin-left: 250px;
+}
+
+.event-label{
+	float:right;
+	margin-left:5px;
+}
+
+/* Small Devices, Tablets */
+@media only screen and (max-width : 768px) {
+	.event-teaser-headings,.event-teaser-desc,.event-time{
+		margin-left: 0px;
+	}
+	.event-teaser-headings{
+		clear:both;
+	}
+	
+
+}
