@@ -84,7 +84,33 @@
 /**
 * Uncomment var_dump to see what data you can play with :-)
 **/
-//var_dump($content); ?>
+//var_dump($content);
+
+/**
+* We start by setting up some prefix and suffix on our fields
+*
+**/
+//event datetime
+if ($page): 
+$content['field_event_time'][0]['#prefix'] = '<div class="datetime"><span class="glyphicon glyphicon-calendar"></span> ';
+$content['field_event_time'][0]['#suffix'] = '</div>';
+//eventype
+$content['field_event_type'][0]['#prefix'] = '<div class="label label-info"><span class="glyphicon glyphicon-user"></span> ';
+$content['field_event_type'][0]['#suffix'] = '</div>';
+//event performer
+$content['field_performer'][0]['#prefix'] = '<div class="performer"><span class="glyphicon glyphicon-bullhorn"></span> ';
+$content['field_performer'][0]['#suffix'] = '</div>';
+//event target group
+$content['field_event_target_group'][0]['#prefix'] = '<div class="label label-success"><span class="glyphicon glyphicon-screenshot"></span> ';
+$content['field_event_target_group'][0]['#suffix'] = '</div>';
+//event venue
+$content['field_event_venue'][0]['#prefix'] = '<div class="label label-primary"><span class="glyphicon glyphicon-map-marker"></span> ';
+$content['field_event_venue'][0]['#suffix'] = '</div>';
+//performer
+$content['field_payment'][0]['#prefix'] = '<div class="label label-warning"><span class="glyphicon glyphicon-shopping-cart"></span> ';
+$content['field_payment'][0]['#suffix'] = '</div>';
+endif;
+ ?>
 <div id="node-<?php print $node->nid; ?>" class="<?php print $classes; ?> clearfix"<?php print $attributes; ?>>
 
   <?php print $user_picture; ?>
@@ -102,6 +128,61 @@
   <?php endif; ?>
 
   <div class="content"<?php print $content_attributes; ?>>
+  <?php if($page): ?>
+  <div class="row">
+  <!--event image-->
+  <?php if($content['field_event_image']): ?>
+  <div class="col-md-3 event-img-box">
+  <?php
+  //render the image here
+   print render($content['field_event_image']);
+   ?>
+  </div>
+  <?php endif; ?>
+  <!--/event image-->
+  <!--event details-->
+  <div class="col-md-9 event-details-box">
+  <?php if($content['field_event_time']): ?>
+  <div class="event-date">
+  <?php print render($content['field_event_time']);?>
+  </div>
+  <?php endif; ?>
+  <?php if($content['field_performer']): ?>
+  <div class="event-performer">
+  <?php print render($content['field_performer']);?>
+  </div>
+  <?php endif; ?>
+  <?php if($content['field_event_type']): ?>
+  <div class="event-type">
+  <?php print render($content['field_event_type']);?>
+  </div>
+  <?php endif; ?>
+  <?php if($content['field_event_target_group']): ?>
+  <div class="event-target-group">
+  <?php print render($content['field_event_target_group']);?>
+  </div>
+  <?php endif; ?>
+  <?php if($content['field_event_venue']): ?>
+  <div class="event-venue">
+  <?php print render($content['field_event_venue']);?>
+  </div>
+  <?php endif; ?>
+  <?php if($content['field_payment']): ?>
+  <div class="event-payment">
+  <?php print render($content['field_payment']);?>
+  </div>
+  <?php endif; ?>
+  </div>
+  <!--/event details-->
+  </div>
+  <div class="row">
+  <!--event description-->
+  <div class="col-md-12 event-description">
+  <?php print render($content['field_event_description']);?>
+  </div>
+  <!--/event description-->
+  </div>
+  <?php endif;?>
     <?php
       // We hide the comments and links now so that we can render them later.
       hide($content['comments']);

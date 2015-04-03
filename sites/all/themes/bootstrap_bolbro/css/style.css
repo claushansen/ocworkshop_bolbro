@@ -2,7 +2,7 @@
  * This file should get overwritten if Method 1 is used. If Method 2 is chosen,
  * remove this comment and start adding your styles to this file.
  */
- /*Custom styling of my event page*/
+ /*Custom styling of my event teasers*/
 .event-teaser-headings,.event-teaser-desc,.event-time{
 	margin-left: 250px;
 	}
@@ -38,6 +38,33 @@
 	.event-teaser-headings{
 		clear:both;
 	}
-	
+}
+/*Styling for node--event.tpl.php*/
 
+/*labels*/
+.event-details-box .event-type,
+.event-details-box .event-venue,
+.event-details-box .event-payment,
+.event-details-box .event-target-group{
+	font-size:110%;
+	margin:5px 0px;
+	
+}
+/*links in labels*/
+.event-details-box .label a{
+	color:#fff;
+}
+/*Date and time*/
+.event-details-box .datetime{
+	font-size:150%;
+	border-bottom:2px solid #ccc;
+}
+/*performer*/
+.performer{
+	font-size:120%;
+	margin: 20px 0px;
+}
+/*event description*/
+.event-description{
+	margin-top:20px;
 }
