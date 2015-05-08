@@ -1,0 +1,5 @@
+name = pollgraphs
+description = Module to display extended graphs for the results of advpoll.
+core = 7.x
+dependencies[] = advpoll
+package = Voting

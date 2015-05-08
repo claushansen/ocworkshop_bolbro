@@ -1,0 +1,110 @@
+<?php
+
+/**
+ * @file
+ * Install file for PollGraphs
+ * 
+ * 
+ * */
+
+/**
+* Implements hook_install
+* This function fires only when the module is installed 
+*
+**/ 
+function pollgraphs_install() {
+
+// fetch the t function for use in install
+	$t = get_t();
+// Creating our Field for choosing witch chart type to show
+   // Check if our field is not already created.
+	if (!field_info_field('advpoll_charttype')) {
+	  //setting the required info about our chartfield in an array
+		$field = array(
+			'active' => '1',
+			'cardinality' => '1',
+			'deleted' => '0',
+			'entity_types' => array(),
+			'field_name' => 'advpoll_charttype',
+			'foreign keys' => array(),
+			'indexes' => array(
+				'value' => array(
+					0 => 'value',
+					),
+				),
+			'module' => 'list',
+			'settings' => array(
+				'allowed_values' => array(
+					'normal' => $t('Normal Bars'),
+					'pie' => $t('Google Piechart'),
+					'vertical_bars' => $t('Google vertical Bars chart.'),
+					),
+				'allowed_values_function' => '',
+				),
+			'translatable' => '0',
+			'type' => 'list_text',
+			
+			);
+	//creating the field
+		field_create_field($field);
+
+    // Here create the field instance on the bundle(advpoll contenttype).
+		$instance = 
+		array(
+			'default_value' => array(
+				0 => array(
+					'value' => 'normal',
+					),
+				),
+			'deleted' => '0',
+			'description' => $t('Choose witch type of chart you would like to display.'),
+			'display' => array(
+				'default' => array(
+					'label' => 'hidden',
+					'module' => 'list',
+					'settings' => array(),
+					'type' => 'hidden',
+					'weight' => 4,
+					),
+				'example_node_list' => array(
+					'label' => 'above',
+					'settings' => array(),
+					'type' => 'hidden',
+					'weight' => 0,
+					),
+				'teaser' => array(
+					'label' => 'above',
+					'settings' => array(),
+					'type' => 'hidden',
+					'weight' => 0,
+					),
+				),
+			'entity_type' => 'node',
+			'field_name' => 'advpoll_charttype',
+			'label' => $t('Chart Type'),
+			'required' => 1,
+			'settings' => array(
+				'user_register_form' => FALSE,
+				),
+			'widget' => array(
+				'active' => 1,
+				'module' => 'options',
+				'settings' => array(),
+				'type' => 'options_buttons',
+				'weight' => '10',
+				),
+			);
+		$instance['entity_type'] = 'node';
+		$instance['bundle'] = 'advpoll';
+		field_create_instance($instance);
+	}
+	
+	
+ }//end hook_install
+
+
+ function pollgraphs_uninstall() { 
+
+ 	field_delete_field('advpoll_charttype');
+ 	
+ }

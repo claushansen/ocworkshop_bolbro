@@ -1,0 +1,153 @@
+<?php
+/**
+ * Implements hook_menu()
+ */
+function pollgraphs_menu() {
+// This is generating the extra menutab in advpoll.
+// show extra graphs to administrators
+  // $menu['node/%node/advpoll/graphs'] = array(
+  //   'title' => 'Graphs',
+  //   'page callback' => 'pollgraphs_results_page',
+  //   'page arguments' => array(1),//this grabs portion of the url(%node) and sends it to our page callback
+  //   'access callback' => '_pollgraphs_access_callback',//function to handle access check
+  //   'access arguments' => array(1),//%node
+  //   'weight' => 3,
+  //   'type' => MENU_LOCAL_TASK,
+  //   'file' => 'pollgraphs.pages.inc',//this file will contain our callback function
+  //   'file path' => drupal_get_path('module', 'pollgraphs') . '/includes',//path to our callback file
+  //   );
+  // return $menu;
+}
+
+function pollgraphs_menu_alter(&$items) {
+  //die(print_r($items));
+  $items['node/%node/results']['page callback'] = 'pollgraphs_results_page';
+  $items['node/%node/results']['file'] = 'pollgraphs.pages.inc';
+  $items['node/%node/results']['file path'] = drupal_get_path('module', 'pollgraphs') . '/includes';
+
+
+
+  }
+
+
+//this function is our access callback should only return true or false
+// If true the menu shows
+function _pollgraphs_access_callback($node) {
+  return $node->type == 'advpoll' && user_access('access content');
+}
+
+//function pollgraphs_node_view($node, $view_mode) {
+//	if(_pollgraphs_access_callback($node)) {
+//		  drupal_add_js('https://www.google.com/jsapi', 'external');
+//	}
+//		
+//}
+
+function pollgraphs_form_alter(&$form, &$form_state, $form_id) {
+  //dsm($form_id);  // print form ID to messages
+  //dsm($form);  // pretty print array using Krumo to messages
+//  dsm($form_state);
+//  if ($form_id == 'advpoll_node_form') {
+//	  
+//    $form['advpoll_charttype'] = array(
+//     '#type' => 'radios',
+//	 '#options' => array(
+//	 'bars' => 'Standard Bars',
+//	 'pie' => 'Google Piechart',
+//	 ),
+//     '#title' => t('title'),
+//     '#description' => t('Chose chart type'),
+//    );
+//	 dsm($form);  // pretty print array using Krumo to messages
+//  dsm($form_state);
+//  }
+}
+
+
+/**
+ * Implementation of hook_enable().
+ */
+//function pollgraphs_enable() {
+//	$t = get_t();
+//  // Check if our field is not already created.
+//  if (!field_info_field('advpoll_charttype')) {
+//    $field = array(
+//      'active' => '1',
+//      'cardinality' => '1',
+//      'deleted' => '0',
+//      'entity_types' => array(),
+//      'field_name' => 'advpoll_charttype',
+//      'foreign keys' => array(),
+//      'indexes' => array(
+//        'value' => array(
+//          0 => 'value',
+//        ),
+//      ),
+//      'module' => 'list',
+//      'settings' => array(
+//        'allowed_values' => array(
+//          'normal' => $t('Normal Bars'),
+//          'pie' => $t('Google Piechart'),
+//          'vertical_bars' => $t('Google vertical Bars chart.'),
+//        ),
+//        'allowed_values_function' => '',
+//      ),
+//      'translatable' => '0',
+//      'type' => 'list_text',
+//    
+//    );
+//    field_create_field($field);
+//
+//    // Create the instance on the bundle.
+//    $instance = array(
+//        array(
+//      'default_value' => array(
+//        0 => array(
+//          'value' => 'normal',
+//        ),
+//      ),
+//      'deleted' => '0',
+//      'description' => $t('Choose witch type of chart you would like to display.'),
+//      'display' => array(
+//        'default' => array(
+//          'label' => 'hidden',
+//          'module' => 'list',
+//          'settings' => array(),
+//          'type' => 'hidden',
+//          'weight' => 4,
+//        ),
+//        'example_node_list' => array(
+//          'label' => 'above',
+//          'settings' => array(),
+//          'type' => 'hidden',
+//          'weight' => 0,
+//        ),
+//        'teaser' => array(
+//          'label' => 'above',
+//          'settings' => array(),
+//          'type' => 'hidden',
+//          'weight' => 0,
+//        ),
+//      ),
+//      'entity_type' => 'node',
+//      'field_name' => 'advpoll_charttype',
+//      'label' => $t('Chart Type'),
+//      'required' => 1,
+//      'settings' => array(
+//        'user_register_form' => FALSE,
+//      ),
+//      'widget' => array(
+//        'active' => 1,
+//        'module' => 'options',
+//        'settings' => array(),
+//        'type' => 'options_buttons',
+//        'weight' => '6',
+//      ),
+//    ),
+//		
+//		
+//		);
+//    field_create_instance($instance);
+//  }
+//
+//}
