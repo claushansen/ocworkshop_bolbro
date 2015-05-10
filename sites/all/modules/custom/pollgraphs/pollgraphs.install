@@ -37,7 +37,7 @@ function pollgraphs_install() {
 				'allowed_values' => array(
 					'normal' => $t('Normal Bars'),
 					'pie' => $t('Google Piechart'),
-					'vertical_bars' => $t('Google vertical Bars chart.'),
+					'bars' => $t('Google Bars chart.'),
 					),
 				'allowed_values_function' => '',
 				),

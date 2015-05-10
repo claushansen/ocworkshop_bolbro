@@ -19,6 +19,38 @@ function pollgraphs_menu() {
   // return $menu;
 }
 
+/**
+ * Implements hook_theme().
+ */
+function pollgraphs_theme($existing, $type, $theme, $path) {
+  return array(
+    'pollgraphs_pie' => array(
+      'variables' => array(
+	  	'items' => NULL,//full item with all data
+        'total' => 0,
+        'voted' => NULL,
+        'nid' => NULL,
+        'cancel_form' => NULL,
+		'chart' => NULL
+      ),
+      'path' => drupal_get_path('module', 'pollgraphs') . '/templates',//setting path to tpl.php
+      'template' => 'pollgraphs-pie-chart' //setting template name without tpl.php(pie-chart.tpl.php)
+    ),
+	'pollgraphs_bars' => array(
+      'variables' => array(
+        'items' => NULL,//full item with all data
+        'total' => 0,
+        'voted' => NULL,
+        'nid' => NULL,
+        'cancel_form' => NULL,
+		'chart' => NULL
+      ),
+      'path' => drupal_get_path('module', 'pollgraphs') . '/templates',//setting path to tpl.php
+      'template' => 'pollgraphs-bars-chart' //setting template name without tpl.php(vert-bars-chart.tpl.php)
+    ),
+	);
+}
+
 function pollgraphs_menu_alter(&$items) {
   //die(print_r($items));
   $items['node/%node/results']['page callback'] = 'pollgraphs_results_page';
@@ -35,19 +67,35 @@ function pollgraphs_menu_alter(&$items) {
 function _pollgraphs_access_callback($node) {
   return $node->type == 'advpoll' && user_access('access content');
 }
-
-//function pollgraphs_node_view($node, $view_mode) {
-//	if(_pollgraphs_access_callback($node)) {
-//		  drupal_add_js('https://www.google.com/jsapi', 'external');
-//	}
-//		
-//}
+/*
+* Implements hook_node_view
+* @url  https://api.drupal.org/api/drupal/modules!node!node.api.php/function/hook_node_view/7
+*
+*/
+function pollgraphs_node_view($node, $view_mode) {
+	//dsm($node);
+	//checking if we need googlechart js and implement it if we do
+	// needs to be done here as it won't load when result is fetched with ajax
+	if($node->type == 'advpoll' && isset($node->advpoll_charttype['und'][0]['value']) && $node->advpoll_charttype['und'][0]['value'] !== 'normal'){
+	 //adding Google chart Api
+	 drupal_add_js('https://www.google.com/jsapi', 'external');
+	 //loading corechart package i head with a weight = 5 so it is loaded later than jsapi
+	 $script = 'google.load("visualization", "1", {packages:["corechart"]});'; 
+	 drupal_add_js($script,array('type' => 'inline', 'scope' => 'header', 'weight' => 5));
+	}
+		
+}
 
 function pollgraphs_form_alter(&$form, &$form_state, $form_id) {
   //dsm($form_id);  // print form ID to messages
   //dsm($form);  // pretty print array using Krumo to messages
 //  dsm($form_state);
-//  if ($form_id == 'advpoll_node_form') {
+if ($form_id == 'advpoll_choice_form') {
+	
+	$form['#submit'][] = 'pollgraphs_custom_submit_handler';
+	$form['submit']['#ajax']['callback'] = 'pollgraphs_custom_submit_handler';
+	//dsm($form); 
+}
 //	  
 //    $form['advpoll_charttype'] = array(
 //     '#type' => 'radios',
@@ -63,91 +111,296 @@ function pollgraphs_form_alter(&$form, &$form_state, $form_id) {
 //  }
 }
 
+/**
+ * Submit handler for voting copied from advpoll
+ * original name: advpoll_form_submit()
+ * only for changing the markup for result after voting
+ */
+function pollgraphs_custom_submit_handler($form, &$form_state) {
+  $data = advpoll_get_form_data($form_state);
+  $count = count($data->choices);
+  $votes = $form[$count]['#value'];
+  $nid = $form_state['build_info']['args'][0]->nid;
+  $writein = '';
+
+  $message = advpoll_form_submit_check($data, $nid);
+
+  if ($message) {
+    $form['message'] = array(
+      '#type' => 'markup',
+      '#prefix' => '<div id="message">',
+      '#suffix' => '</div>',
+      '#markup' => $message,
+    );
+    return $form;
+  }
+
+// check to see if a write-in exists and was filled in.
+  if ($data->write_in) {
+
+    if (isset($form_state['values']['write_in'])) {
+      $writein = trim($form_state['values']['write_in']);
+
+// Sanitize and check to see if there's a valid write in afterward.
+// There is no reason for a user to be allowed to use html tags.
+      $writein = filter_xss($writein);
+      $writein = check_plain($writein);
+
+      if ($writein) {
+        $data->choices[] = advpoll_process_writein($nid, $writein, $data);
+      } else {
+        $form['message'] = array(
+          '#type' => 'markup',
+          '#prefix' => '<div id="message">',
+          '#suffix' => '</div>',
+          '#markup' => t('Please type in a valid write-in choice or select a different option.'),
+        );
+        return $form;
+      }
+    }
+  }
+
+// data structure returned from form is based upon whether it was a radios
+// or checkbox element
+  if ($data->max_choices > 1) {
+    if ($writein) {
+      unset($votes['write-in']);
+      $votes[$writein] = $writein;
+    }
+    $selected = advpoll_checkbox_selected($data->choices, $votes);
+  } else {
+    if ($writein) {
+      $votes = $writein;
+    }
+    $selected = advpoll_radio_selected($data->choices, $votes);
+  }
+
+  if (count($selected) > 0 && count($selected) <= $data->max_choices) {
+    foreach ($selected as $item) {
+      $vote = array();
+      $vote['type'] = 'advpoll';
+      $vote['tag'] = $item;
+      $vote['nid'] = $nid;
+      $vote['value'] = 1;
+      $vote['mode'] = $data->mode;
+      $vote['duration'] = $data->cookie_duration;
+      advpoll_add_votes($vote);
+    }
+	// This is where we call our own callback function
+	$element['#markup'] = pollgraphs_display_results($nid, $data);
+    return $element;
+  } else {
+    $form['message'] = array(
+      '#type' => 'markup',
+      '#prefix' => '<div id="message">',
+      '#suffix' => '</div>',
+      '#markup' => t('Select up to @quantity @votes.', array(
+        '@quantity' => $data->max_choices,
+        '@votes' => format_plural($data->max_choices, 'vote', 'votes')
+        )
+      ),
+    );
+    return $form;
+  }
+}
+/**
+ * Our custom callback for displaing our charts if needed
+ * based on advpoll_display_results() Line 428 in advpoll.module 
+ * needed for changing the markup for result after voting
+ */
+function pollgraphs_display_results($nid, $data, $page = 0) {
+
+  $output = '';
+  $form = NULL;
+  $expired = FALSE;
+
+  if ($data->state == 'close') {
+    $expired = TRUE;
+  }
+  
+  if ($data->start_date && $data->start_date > time() || $data->end_date && $data->end_date < time()) {
+    $expired = TRUE;
+  }
+
+// get user's votes if they're logged in and if voting is normal
+  $votes = array();
+  if ($data->mode == 'normal') {
+    $votes = advpoll_get_user_votes($nid);
+  }
+
+  if (user_access('cancel own vote') && $votes && !$expired) {
+    $form = drupal_get_form('advpoll_cancel_vote_form', $nid);
+  }
+  $rendered_form = drupal_render($form);
+
+
+  if (!$page && $expired && $data->show_results == 'never') {
+    $output .= theme('advpoll_closed', array('data' => $data));
+  } elseif (!$page && !$votes && $data->electoral && ($data->show_results == 'afterclose'
+    || $data->show_results == 'never' ) && !$expired) {
+    $output .= theme('advpoll_ineligible', array('data' => $data));
+  } elseif (!$page && ($data->show_results == 'never'
+    || ($data->show_results == 'afterclose' && !$expired))) {
+    $output .= theme('advpoll_noresults', array(
+      'data' => $data,
+      'votes' => $votes,
+      'nid' => $nid,
+      'cancel_form' => $rendered_form,
+      )
+    );
+  } else {
+    $results = advpoll_get_votes($nid, $data->behavior);
+    $bars = '';
+    $final = advpoll_update_choices($data->choices, $results['choices']);
+	//getting selected charttype
+	$chart_type = getChartType($nid);
+
+    switch ($chart_type) {
+
+
+      case 'pie':
+        //drupal_add_js(getChartScript($final, 'PieChart'),'inline');
+        $output .= theme('pollgraphs_pie', array(
+        'items' => $final,
+        'total' => $results['total'],
+        'voted' => $votes,
+        'nid' => $nid,
+        'cancel_form' => $rendered_form,
+		'chart' => getChartScript($final, 'PieChart'),
+        )
+      );
+      break;
+
+      case 'bars':
+        $output .= theme('pollgraphs_bars', array(
+        'items' => $final,
+        'total' => $results['total'],
+        'voted' => $votes,
+        'nid' => $nid,
+        'cancel_form' => $rendered_form,
+		'chart' => getChartScript($final, 'BarChart'),
+        )
+      );
+        break;
+
+      default:
+      foreach ($final as $item) {
+      $voted = FALSE;
+
+      if (in_array($item['tag'], $votes)) {
+        $voted = TRUE;
+      }
+      $title = $item['title'];
+
+      $show_bar = TRUE;
+      if ($item['write_in']) {
+        $title .= ' ' . t('(Write in)');
+
+        $show_bar = _advpoll_show_writeins_access();
+      }
+    
+    //Checking if we have selected other charttype
+    if($chart_type !== 'normal'){
+    $show_bar = FALSE;  
+    }
+    //if chartype = normal
+      if ($show_bar) {
+        $bars .= theme('advpoll_bar', array(
+          'title' => $title,
+          'percentage' => $item['percentage'],
+          'votes' => $item['votes'],
+          'voted' => $voted,
+          )
+        );
+      }//end if $show_bar
+
+    }//end foreach
+  
+
+    $output .= theme('advpoll_results', array(
+      'bars' => $bars,
+      'total' => $results['total'],
+      'voted' => $votes,
+      'nid' => $nid,
+      'cancel_form' => $rendered_form,
+      )
+    );
+      
+
+    }//end switch
+
+
+  }
+ //$output = getChartType($nid);
+  return $output;
+}
+/*
+* getChartType($nid)
+* Helper function for getting selected charttype
+*/
+function getChartType($nid){
+	$node = node_load($nid);
+	return $node->advpoll_charttype['und'][0]['value'];
+}
+
 
 /**
- * Implementation of hook_enable().
+ * Implements hook_theme_registry_alter().
  */
-//function pollgraphs_enable() {
-//	$t = get_t();
-//  // Check if our field is not already created.
-//  if (!field_info_field('advpoll_charttype')) {
-//    $field = array(
-//      'active' => '1',
-//      'cardinality' => '1',
-//      'deleted' => '0',
-//      'entity_types' => array(),
-//      'field_name' => 'advpoll_charttype',
-//      'foreign keys' => array(),
-//      'indexes' => array(
-//        'value' => array(
-//          0 => 'value',
-//        ),
-//      ),
-//      'module' => 'list',
-//      'settings' => array(
-//        'allowed_values' => array(
-//          'normal' => $t('Normal Bars'),
-//          'pie' => $t('Google Piechart'),
-//          'vertical_bars' => $t('Google vertical Bars chart.'),
-//        ),
-//        'allowed_values_function' => '',
-//      ),
-//      'translatable' => '0',
-//      'type' => 'list_text',
-//    
-//    );
-//    field_create_field($field);
-//
-//    // Create the instance on the bundle.
-//    $instance = array(
-//        array(
-//      'default_value' => array(
-//        0 => array(
-//          'value' => 'normal',
-//        ),
-//      ),
-//      'deleted' => '0',
-//      'description' => $t('Choose witch type of chart you would like to display.'),
-//      'display' => array(
-//        'default' => array(
-//          'label' => 'hidden',
-//          'module' => 'list',
-//          'settings' => array(),
-//          'type' => 'hidden',
-//          'weight' => 4,
-//        ),
-//        'example_node_list' => array(
-//          'label' => 'above',
-//          'settings' => array(),
-//          'type' => 'hidden',
-//          'weight' => 0,
-//        ),
-//        'teaser' => array(
-//          'label' => 'above',
-//          'settings' => array(),
-//          'type' => 'hidden',
-//          'weight' => 0,
-//        ),
-//      ),
-//      'entity_type' => 'node',
-//      'field_name' => 'advpoll_charttype',
-//      'label' => $t('Chart Type'),
-//      'required' => 1,
-//      'settings' => array(
-//        'user_register_form' => FALSE,
-//      ),
-//      'widget' => array(
-//        'active' => 1,
-//        'module' => 'options',
-//        'settings' => array(),
-//        'type' => 'options_buttons',
-//        'weight' => '6',
-//      ),
-//    ),
+function pollgraphs_theme_registry_alter(&$theme_registry){
+//	 $path = drupal_get_path('module', 'pollgraphs');
+//	 if (isset($theme_registry['advpoll_bar'])) {
+//		$theme_registry['advpoll_bar']['path'] = $path;
+//		if(isset($theme_registry['advpoll_bar']['template'])){
+//		unset ($theme_registry['advpoll_bar']['template']);	
+//		}
+//		$theme_registry['advpoll_bar']['function'] = 'pollgraphs_advpoll_bar';
 //		
-//		
-//		);
-//    field_create_instance($instance);
-//  }
-//
-//}
+//		$theme_registry['advpoll_bar']['theme path'] = $path;
+////		$theme_registry['advpoll_bar']['path'] = $path . '/templates';
+////		$theme_registry['advpoll_bar']['template'] = 'pollgraphs-advpoll-bar'; 
+//	 }
+//	 if (isset($theme_registry['advpoll_results'])) {
+//		$theme_registry['advpoll_results']['path'] = $path . '/templates';
+//		$theme_registry['advpoll_results']['template'] = 'pollgraphs-advpoll-results'; 
+//	 }
+	 //dsm($theme_registry);
+// }
+// function pollgraphs_advpoll_bar(&$variables){
+//	return $variables;
+ }
+
+/*
+* getChartScript()
+* Custom function for creating javascript for our charts
+*
+*/
+ function getChartScript($final, $type = 'PieChart', $title = 'poll results', $width='100%', $height='400px'){
+  $chartarr = array();
+  $chartarr[] = array('Question', 'Answer');
+  foreach($final as $choice){
+  $chartarr[] = array($choice['title'] , $choice['votes'] );  
+  }
+  $chartdata = json_encode($chartarr);
+
+  $script = '<div id="'.$type.'-chartdiv" style="width:'.$width.'; height:'.$height.';">'.t('There are no charts for this type of poll').'</div>';
+  $script .= '<script type="text/javascript">';
+  //$script .= 'google.load("visualization", "1", {packages:["corechart"]});';
+  //$script .= 'google.setOnLoadCallback(drawChart);';
+  $script .= 'function '.$type.'drawChart() {';
+  $script .= 'var data = google.visualization.arrayToDataTable('.$chartdata.');';
+  $script .= 'var options = {pieSliceText: "label", title: "'.$title.'" };';
+  $script .= 'var chart = new google.visualization.'.$type.'(document.getElementById("'.$type.'-chartdiv"));';
+  $script .= 'chart.draw(data, options);';
+  $script .= '}';
+  $script .= $type.'drawChart();';
+  $script .= 'jQuery(window).resize(function(){';
+  $script .= $type.'drawChart();';
+  $script .= '});';
+  $script .= '</script>';
+  
+  return $script;
+
+  //adding script inline
+  //drupal_add_js($script,'inline');
+ } 
