@@ -46,7 +46,7 @@ function pollgraphs_theme($existing, $type, $theme, $path) {
 		'chart' => NULL
       ),
       'path' => drupal_get_path('module', 'pollgraphs') . '/templates',//setting path to tpl.php
-      'template' => 'pollgraphs-bars-chart' //setting template name without tpl.php(vert-bars-chart.tpl.php)
+      'template' => 'pollgraphs-bars-chart' //setting template name without tpl.php(pollgraphs-bars-chart.tpl.php)
     ),
 	
 	'pollgraphs_columns' => array(
@@ -59,7 +59,7 @@ function pollgraphs_theme($existing, $type, $theme, $path) {
 		'chart' => NULL
       ),
       'path' => drupal_get_path('module', 'pollgraphs') . '/templates',//setting path to tpl.php
-      'template' => 'pollgraphs-columns-chart' //setting template name without tpl.php(vert-bars-chart.tpl.php)
+      'template' => 'pollgraphs-columns-chart' //setting template name without tpl.php(pollgraphs-columns-chart.tpl.php)
     ),
 	);
 }
@@ -88,7 +88,7 @@ function _pollgraphs_access_callback($node) {
 function pollgraphs_node_view($node, $view_mode) {
 	//dsm($node);
 	//checking if we need googlechart js and implement it if we do
-	// needs to be done here as it won't load when result is fetched with ajax
+	// needs to be done here as it won't load from template when result is fetched with ajax
 	if($node->type == 'advpoll' && isset($node->advpoll_charttype['und'][0]['value']) && $node->advpoll_charttype['und'][0]['value'] !== 'normal'){
 	 //adding Google chart Api
 	 drupal_add_js('https://www.google.com/jsapi', 'external');
