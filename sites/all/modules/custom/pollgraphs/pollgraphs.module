@@ -3,20 +3,20 @@
  * Implements hook_menu()
  */
 function pollgraphs_menu() {
-// This is generating the extra menutab in advpoll.
-// show extra graphs to administrators
-  // $menu['node/%node/advpoll/graphs'] = array(
-  //   'title' => 'Graphs',
-  //   'page callback' => 'pollgraphs_results_page',
-  //   'page arguments' => array(1),//this grabs portion of the url(%node) and sends it to our page callback
-  //   'access callback' => '_pollgraphs_access_callback',//function to handle access check
-  //   'access arguments' => array(1),//%node
-  //   'weight' => 3,
-  //   'type' => MENU_LOCAL_TASK,
-  //   'file' => 'pollgraphs.pages.inc',//this file will contain our callback function
-  //   'file path' => drupal_get_path('module', 'pollgraphs') . '/includes',//path to our callback file
-  //   );
-  // return $menu;
+ //This is generating the extra menutab in advpoll.
+ //Giving poll administrators access to poll results as csv-file
+   $menu['node/%node/advpoll/export'] = array(
+     'title' => 'Export csv',
+     'page callback' => 'pollgraphs_export_csv',
+     'page arguments' => array(1),//this grabs portion of the url(%node) and sends it to our page callback
+     'access callback' => '_pollgraphs_access_callback',//function to handle access check
+     'access arguments' => array(1),//%node
+     'weight' => 6,
+     'type' => MENU_LOCAL_TASK,
+     'file' => 'pollgraphs.pages.inc',//this file will contain our callback function
+     'file path' => drupal_get_path('module', 'pollgraphs') . '/includes',//path to our callback file
+     );
+   return $menu;
 }
 
 /**
@@ -78,7 +78,7 @@ function pollgraphs_menu_alter(&$items) {
 //this function is our access callback should only return true or false
 // If true the menu shows
 function _pollgraphs_access_callback($node) {
-  return $node->type == 'advpoll' && user_access('access content');
+  return $node->type == 'advpoll' && user_access('administer polls');
 }
 /*
 * Implements hook_node_view

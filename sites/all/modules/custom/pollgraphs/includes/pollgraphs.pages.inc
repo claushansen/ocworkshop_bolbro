@@ -85,6 +85,48 @@ function pollgraphs_results_page($node){
 	);
 	return $content;
 }
+
+/* 
+* Callback function for eksport csvfile
+*
+*/
+
+function pollgraphs_export_csv($node){
+	
+	$filename = 'pollgraphs_export_node_'.$node->nid.'.csv';
+	//setting headers
+	$now = gmdate("D, d M Y H:i:s");
+    header("Expires: Tue, 03 Jul 2001 06:00:00 GMT");
+    header("Cache-Control: max-age=0, no-cache, must-revalidate, proxy-revalidate");
+    header("Last-Modified: {$now} GMT");
+
+    // force download  
+    header("Content-Type: application/force-download");
+    header("Content-Type: application/octet-stream");
+    header("Content-Type: application/download");
+
+    // disposition / encoding on response body
+    header("Content-Disposition: attachment;filename={$filename}");
+    header("Content-Transfer-Encoding: binary");
+	
+	$data = advpoll_get_data($node);
+	$results = advpoll_get_votes($node->nid,$data->behavior);
+    $final = advpoll_update_choices($data->choices, $results['choices']);
+	
+	//creating csvfile in memory
+	ob_start();
+	$csv = fopen("php://output", 'w');
+   	fputcsv($csv, array_keys(reset($final)));
+   	foreach ($final as $row) {
+      fputcsv($csv, $row);
+   	}
+   	fclose($csv);
+	echo ob_get_clean();
+	die();
+
+	
+}
+
 function org_advpoll_results_page($node) {
   drupal_add_css(drupal_get_path('module', 'advpoll') . '/css/advpoll.css', array('group' => CSS_DEFAULT, 'every_page' => TRUE));
   $data = advpoll_get_data($node);
