@@ -8,7 +8,7 @@ function pollgraphs_results_page($node){
     $final = advpoll_update_choices($data->choices, $results['choices']);
 	$piechart = getChartScript($final, 'PieChart', 'poll results', '100%', '400px');
 	$barchart = getChartScript($final, 'BarChart', 'poll results', '100%', '400px');
-	
+	$columnchart = getChartScript($final, 'ColumnChart', 'poll results', '100%', '400px');
 	$content = array();
 	
 	$content['start_tabbable'] = array(
@@ -23,6 +23,7 @@ function pollgraphs_results_page($node){
 		'<li class="active"><a href="#original" data-toggle="tab">Normal</a></li>'.
 		'<li><a href="#piechart" data-toggle="tab">Google Piechart</a></li>'.
 		'<li><a href="#barchart" data-toggle="tab">Google Barchart</a></li>'.
+		'<li><a href="#columnchart" data-toggle="tab">Google Columnchart</a></li>'.
 		'</ul>',
 		'#prefix' => '<div class="col-md-12"; >',
 		'#suffix' => '</div>'
@@ -53,6 +54,13 @@ function pollgraphs_results_page($node){
 		'#suffix' => '</div>'
 		);
 		
+	$content['columnchart'] = array(
+		'#type' => 'markup',
+		'#markup' => $columnchart,
+		'#prefix' => '<div id="columnchart" class="col-md-12 tab-pane">',
+		'#suffix' => '</div>'
+		);
+		
 	$content['end_tabcontent'] = array(
 		'#type' => 'markup',
 		'#markup' => '</div>',
@@ -70,6 +78,7 @@ function pollgraphs_results_page($node){
 		console.log(\'test:\'+e.target);
 		PieChartdrawChart();
 		BarChartdrawChart();
+		ColumnChartdrawChart();
 		});',
 		'#prefix' => '<script>',
 		'#suffix' => '</script>'

@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Template for an Pollgraphs Google Pie Chart 
+ * Template for an Pollgraphs Google columns Chart 
  *
  * Variables available:
  * - $title: The title of the poll.

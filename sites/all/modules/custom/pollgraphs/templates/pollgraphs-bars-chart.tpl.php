@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Default template for wrapping bar results - includes count of votes.
+ * Template for Pollgraphs Bar Charts
  *
  * Variables available:
  * - $nid: The nid of the poll
@@ -13,16 +13,12 @@
  * - $voted: An array indicating which unique choice ids were selected by the user.
  *
  */
- print $chart;
+// print $chart;
 ?>
-<h2>google bars</h2>
-
-
-<div class="total"><?php print t('Total votes: @total', array('@total' => $total)); ?></div>
-<?php print_r($items); ?> 
 <div class="poll" id="advpoll-<?php print $nid; ?>">
-
-    
+<div class="col-md-12">
+<?php print $chart; ?>
+</div>    
     <div class="total"><?php print t('Total votes: @total', array('@total' => $total)); ?></div>
 
     <?php if ($voted): ?>
@@ -30,4 +26,5 @@
     <?php endif; ?>
     
     <?php print $cancel_form; ?>
+    
 </div>

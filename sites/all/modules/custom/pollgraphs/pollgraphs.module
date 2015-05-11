@@ -48,6 +48,19 @@ function pollgraphs_theme($existing, $type, $theme, $path) {
       'path' => drupal_get_path('module', 'pollgraphs') . '/templates',//setting path to tpl.php
       'template' => 'pollgraphs-bars-chart' //setting template name without tpl.php(vert-bars-chart.tpl.php)
     ),
+	
+	'pollgraphs_columns' => array(
+      'variables' => array(
+        'items' => NULL,//full item with all data
+        'total' => 0,
+        'voted' => NULL,
+        'nid' => NULL,
+        'cancel_form' => NULL,
+		'chart' => NULL
+      ),
+      'path' => drupal_get_path('module', 'pollgraphs') . '/templates',//setting path to tpl.php
+      'template' => 'pollgraphs-columns-chart' //setting template name without tpl.php(vert-bars-chart.tpl.php)
+    ),
 	);
 }
 
@@ -282,6 +295,18 @@ function pollgraphs_display_results($nid, $data, $page = 0) {
         )
       );
         break;
+		
+	  case 'columns':
+	  $output .= theme('pollgraphs_columns', array(
+	  'items' => $final,
+	  'total' => $results['total'],
+	  'voted' => $votes,
+	  'nid' => $nid,
+	  'cancel_form' => $rendered_form,
+	  'chart' => getChartScript($final, 'ColumnChart'),
+	  )
+	);
+	  break;
 
       default:
       foreach ($final as $item) {
@@ -376,6 +401,7 @@ function pollgraphs_theme_registry_alter(&$theme_registry){
 *
 */
  function getChartScript($final, $type = 'PieChart', $title = 'poll results', $width='100%', $height='400px'){
+
   $chartarr = array();
   $chartarr[] = array('Question', 'Answer');
   foreach($final as $choice){
